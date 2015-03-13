@@ -114,7 +114,14 @@ find extracted -type f -exec cat {} \; > all-extracted.txt
 # Extract verbs with TreeTagger
 # N.B. treetagger segfaults with the single big file, run it over each article instead
 #cat all-extracted.txt | treetagger/cmd/tree-tagger-italian | grep VER | sort -u > verbi.txt
-find extracted -type f -exec bash -c "cat '{}' | treetagger/cmd/tree-tagger-"$LANGUAGE" | grep VER >> verbs" \;
+#For english corpus
+if [$LANGCODE == 'en']; then
+	# verbTag is regex grep expression for extracting all the four verb POS tags in english i.e VB, VBN, VBD,VBZ
+	verbTag='[[:space:]]VB[[:space:]]\|[[:space:]]VBZ[[:space:]]\|[[:space:]]VBD[[:space:]]\|[[:space:]]VBN[[:space:]]\|[[:space:]]VBP[[:space:]]'
+	find extracted -type f -exec bash -c "cat '{}' | treetagger/cmd/$TAGGER | grep -E  $verbTag >> verbs" \;
+else
+	find extracted -type f -exec bash -c "cat '{}' | treetagger/cmd/tree-tagger-"$LANGUAGE" | grep VER >> verbs" \;
+fi
 sort -u verbs > unique-sorted-verbs
 # Extract vocabulary
 python scripts/bag_of_words.py all-extracted.txt
