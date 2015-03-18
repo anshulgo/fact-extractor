@@ -16,6 +16,7 @@ fi
 LANGUAGE="$(echo $1 | tr '[:upper:]' '[:lower:]')"
 
 # Switch statement to select language
+verbTag='[[:space:]]VER[[:space:]]'
 case $LANGUAGE in
 	"bulgarian" | "bg")
   		LANGUAGE="bulgarian"
@@ -24,14 +25,19 @@ case $LANGUAGE in
 	"chinese" | "zh")
   		LANGUAGE="chinese"
   		LANGCODE="zh"
+  		verbTag='[[:space:]]V[ACEV][[:space:]]'
+
   		;;
 	"dutch" | "nl")
   		LANGUAGE="dutch"
   		LANGCODE="nl"
+  		verbTag='[[:space:]]WW[1-13][[:space:]]'
+
   		;;
 	"english" | "en")
   		LANGUAGE="english"
   		LANGCODE="en"
+  		verbTag='[[:space:]]VB[DNPZ]?[[:space:]]'
   		;;
 	"estonian" | "et")
   		LANGUAGE="estonian"
@@ -44,6 +50,8 @@ case $LANGUAGE in
 	"french" | "fr")
   		LANGUAGE="french"
   		LANGCODE="fr"
+  		verbTag='[[:space:]]VER[[:space:]]'
+
   		;;
 	"galician" | "gl")
   		LANGUAGE="galician"
@@ -52,18 +60,25 @@ case $LANGUAGE in
 	"german" | "de")
   		LANGUAGE="german"
   		LANGCODE="de"
+  		verbTag='[[:space:]]PTKVZ[[:space:]]\[[:space:]]VVFIN[[:space:]]\[[:space:]]VAFIN[[:space:]]\[[:space:]]VMFIN[[:space:]]'
+
   		;;
 	"italian" | "it")
   		LANGUAGE="italian"
   		LANGCODE="it"
+  		verbTag='[[:space:]]V[AM]?[[:space:]]'
+
   		;;
 	"latin" | "la")
   		LANGUAGE="latin"
   		LANGCODE="la"
+  		verbTag='[[:space:]]V[123]SG-ACT[[:space:]]\[[:space:]]V[123]PL-ACT[[:space:]]\[[:space:]]V[123]SG-PASS[[:space:]]\[[:space:]]V[123]PL-PASS[[:space:]]'
+
   		;;
 	"mongolian" | "mn")
   		LANGUAGE="mongolian"
   		LANGCODE="mn"
+  		verbTag='[[:space:]]V[DPSFBCS123X]?[[:space:]]'
   		;;
 	"polish" | "pl")
   		LANGUAGE="polish"
@@ -84,6 +99,7 @@ case $LANGUAGE in
 	"spanish" | "es")
   		LANGUAGE="spanish"
   		LANGCODE="es"
+  		verbTag='[[:space:]]VB[[:space:]]\[[:space:]]MD[[:space:]]'
   		;;
 	"swahili" | "sw")
   		LANGUAGE="swahili"
@@ -114,14 +130,7 @@ find extracted -type f -exec cat {} \; > all-extracted.txt
 # Extract verbs with TreeTagger
 # N.B. treetagger segfaults with the single big file, run it over each article instead
 #cat all-extracted.txt | treetagger/cmd/tree-tagger-italian | grep VER | sort -u > verbi.txt
-#For english corpus
-if [$LANGCODE == 'en']; then
-	# verbTag is regex grep expression for extracting all the four verb POS tags in english i.e VB, VBN, VBD,VBZ
-	verbTag='[[:space:]]VB[[:space:]]\|[[:space:]]VBZ[[:space:]]\|[[:space:]]VBD[[:space:]]\|[[:space:]]VBN[[:space:]]\|[[:space:]]VBP[[:space:]]'
-	find extracted -type f -exec bash -c "cat '{}' | treetagger/cmd/$TAGGER | grep -E  $verbTag >> verbs" \;
-else
-	find extracted -type f -exec bash -c "cat '{}' | treetagger/cmd/tree-tagger-"$LANGUAGE" | grep VER >> verbs" \;
-fi
+find extracted -type f -exec bash -c "cat '{}' | treetagger/cmd/$TAGGER | grep -E  $verbTag >> verbs" \;
 sort -u verbs > unique-sorted-verbs
 # Extract vocabulary
 python scripts/bag_of_words.py all-extracted.txt
